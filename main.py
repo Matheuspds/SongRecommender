@@ -87,35 +87,27 @@ def searchBest(pl_user, file_arr):
 
 
 def makeRank(train_arr, test_arr):
-    evaluate = {}
-    evaluate["origin"] = {}
-    evaluate["cands"] = [None] * 10
+    res = {}
     interator = 0
     for f in test_arr:
         with open('../test_def/'+f) as pl:
             test_data = json.load(pl)
         print "calculating file " + f + " " + str(interator)
-        for ft in train_arr:
-            with open('../training/' + ft) as pl2: 
-                training_data = json.load(pl2)
-            for p in test_data["playlists"]:
-                evaluate = {}
-                evaluate["origin"] = p["pid"]
-                evaluate["cands"] = [None] * 10
-                for p2 in training_data["playlists"]:
-                    obj = {}
-                    p_treat = treatPlay(p)
-                    p2_treat = treatPlay(p2)
-                    index_jac = jaccard_pls(p_treat, p2_treat, "tracks")
-                    obj["pid"] = p2_treat["pid"]
-                    obj["jac"] = index_jac
-                    for i in evaluate["cands"]:
-                        if i == None:
-                            evaluate["cands"].append(obj)
-                        elif obj["jac"] > i["jac"]:
-                            i = obj
-                with open("../result/"+str(p["pid"])+".json", "w") as test:
-                    json.dump(evaluate, test)
+        for p_test in test_data["playlist"]:
+            for f2 in train_arr:
+                evaluate = []
+                with open('../training/'+f2) as pl2:
+                    training_data = json.load(pl2)
+                for p_train in training_arr["playlist"]:                    
+                    p_test = treatPlay(p_test)
+                    p_train = treatPlay(p_train)
+                    jacc = jaccard_pls(p_test, p_train, "tracks")
+                    res["origin_pid"] = p_test["pid"]
+                    res["cand_pid"] = p_train["pid"]
+                    res["similarity"] = jacc
+                    evaluate.append(res)
+                with open("../result/"+f+"/"+str(p_test["pid"])+".json", "w") as result:
+                    json.dumps(res, result)
         interator += 1
 
 
