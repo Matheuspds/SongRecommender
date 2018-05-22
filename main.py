@@ -93,32 +93,42 @@ def makeRank(train_arr, test_arr):
         with open('../test_def/'+f) as pl:
             test_data = json.load(pl)
         print "calculating file " + f + " " + str(interator)
-        for p_test in test_data["playlist"]:
+        for p_test in test_data["playlists"]:
+            p_test = treatPlay(p_test)
+            iterator = 0
+            evaluate = []
             for f2 in train_arr:
-                evaluate = []
                 with open('../training/'+f2) as pl2:
                     training_data = json.load(pl2)
-                for p_train in training_arr["playlist"]:                    
-                    p_test = treatPlay(p_test)
+                print "verifying file " + str(iterator) + " of 1000"
+                iterator+=1
+                for p_train in training_data["playlists"]:                 
                     p_train = treatPlay(p_train)
                     jacc = jaccard_pls(p_test, p_train, "tracks")
-                    res["origin_pid"] = p_test["pid"]
-                    res["cand_pid"] = p_train["pid"]
-                    res["similarity"] = jacc
-                    evaluate.append(res)
-                with open("../result/"+f+"/"+str(p_test["pid"])+".json", "w") as result:
-                    json.dumps(res, result)
+                    if jacc > 0.0 :   
+                        res["origin_pid"] = p_test["pid"]
+                        res["cand_pid"] = p_train["pid"]
+                        res["similarity"] = jacc
+                        evaluate.append(res)
+                    res = {}
+               
+            with open("../result/"+str(p_test["pid"])+".json", "w") as result:
+                json.dump(evaluate, result)
         interator += 1
 
+def maxArray(evaluate, res):
+    for i in range(10):
+        if evaluate[i]["similarity"] < res["similarity"]:
+            evaluate[i] = res
+            break
 
-
-file_arr = os.listdir('../data/mpd.v1/data/')
-with open('play.json') as f:
-    pls2 = json.load(f)
-with open('test.json') as f:
-    pls3 = json.load(f)
-pl_u = treatPlay(pls2["playlists"][0])
-pl_t = treatPlay(pls3["playlists"][0])
+#file_arr = os.listdir('../data/mpd.v1/data/')
+# with open('play.json') as f:
+#     pls2 = json.load(f)
+# with open('test.json') as f:
+#     pls3 = json.load(f)
+# pl_u = treatPlay(pls2["playlists"][0])
+# pl_t = treatPlay(pls3["playlists"][0])
 
 training_arr = os.listdir('../training/')
 test_arr = os.listdir('../test_def/')
