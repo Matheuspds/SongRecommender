@@ -13,6 +13,44 @@ import os
 
 
 
+
+
+
+def searchBest(pl_user, file_arr):
+    res = {}
+    res["tracks"] = {}
+    res["tracks"]["cand"] = 0.0
+    res["albums"] = {}
+    res["albums"]["cand"] = 0.0
+    res["artists"] = {}
+    res["artists"]["cand"] = 0.0
+    iterator = 0
+    for f in file_arr:
+        iterator += 1
+        with open('../data/mpd.v1/data/'+f) as pl:
+            pl_data = json.load(pl)
+            print "calculating file " + f + " " + str(iterator)
+        for p in pl_data["playlists"]:
+            p_treat = treatPlay(p)
+            if p_treat["pid"] == 2163:
+                continue
+            jac_tracks = jaccard_pls(p_treat, pl_user, "tracks")
+            jac_albums = jaccard_pls(p_treat, pl_user, "albums")
+            jac_artists = jaccard_pls(p_treat, pl_user, "artists")
+            if  jac_tracks > res["tracks"]["cand"]:
+                res["tracks"]["cand"] = float(jac_tracks)
+                res["tracks"]["pid"] = p_treat["pid"]
+                res["tracks"]["file"] = f
+            if  jac_albums > res["albums"]["cand"]:
+                res["albums"]["cand"] = float(jac_albums)
+                res["albums"]["pid"] = p_treat["pid"]
+                res["albums"]["file"] = f
+            if  jac_artists > res["artists"]["cand"]:
+                res["artists"]["cand"] = float(jac_artists)
+                res["artists"]["pid"] = p_treat["pid"]
+                res["artists"]["file"] = f
+    return res
+
 def treatPlay(pl):
     play = {}
     play["tracks"] = []
@@ -50,77 +88,43 @@ def jaccard_pls(pl1, pl2, cat):
             union.append(p2)
     return len(intersection)/float(len(union))
 
-def searchBest(pl_user, file_arr):
-    res = {}
-    res["tracks"] = {}
-    res["tracks"]["cand"] = 0.0
-    res["albums"] = {}
-    res["albums"]["cand"] = 0.0
-    res["artists"] = {}
-    res["artists"]["cand"] = 0.0
-    iterator = 0
-    for f in file_arr:
-        iterator += 1
-        with open('../data/mpd.v1/data/'+f) as pl:
-            pl_data = json.load(pl)
-            print "calculating file " + f + " " + str(iterator)
-        for p in pl_data["playlists"]:
-            p_treat = treatPlay(p)
-            if p_treat["pid"] == 2163:
-                continue
-            jac_tracks = jaccard_pls(p_treat, pl_user, "tracks")
-            jac_albums = jaccard_pls(p_treat, pl_user, "albums")
-            jac_artists = jaccard_pls(p_treat, pl_user, "artists")
-            if  jac_tracks > res["tracks"]["cand"]:
-                res["tracks"]["cand"] = float(jac_tracks)
-                res["tracks"]["pid"] = p_treat["pid"]
-                res["tracks"]["file"] = f
-            if  jac_albums > res["albums"]["cand"]:
-                res["albums"]["cand"] = float(jac_albums)
-                res["albums"]["pid"] = p_treat["pid"]
-                res["albums"]["file"] = f
-            if  jac_artists > res["artists"]["cand"]:
-                res["artists"]["cand"] = float(jac_artists)
-                res["artists"]["pid"] = p_treat["pid"]
-                res["artists"]["file"] = f
-    return res
-
 
 def makeRank(train_arr, test_arr):
     res = {}
     interator = 0
     for f in test_arr:
-        with open('../test_def/'+f) as pl:
+        with open('../data/test_def/'+f) as pl:
             test_data = json.load(pl)
         print "calculating file " + f + " " + str(interator)
         for p_test in test_data["playlists"]:
-            p_test = treatPlay(p_test)
             iterator = 0
             evaluate = []
             for f2 in train_arr:
-                with open('../training/'+f2) as pl2:
+                with open('../data/training/'+f2) as pl2:
                     training_data = json.load(pl2)
                 print "verifying file " + str(iterator) + " of 1000"
                 iterator+=1
-                for p_train in training_data["playlists"]:                 
-                    p_train = treatPlay(p_train)
+                for p_train in training_data["playlists"]:              
                     jacc = jaccard_pls(p_test, p_train, "tracks")
                     if jacc > 0.0 :   
                         res["origin_pid"] = p_test["pid"]
                         res["cand_pid"] = p_train["pid"]
                         res["similarity"] = jacc
-                        evaluate.append(res)
-                    res = {}
-               
-            with open("../result/"+str(p_test["pid"])+".json", "w") as result:
+                        evaluate = maxArray(evaluate, res)
+                    res = {} 
+            with open("../data/result/"+str(p_test["pid"])+".json", "w") as result:
                 json.dump(evaluate, result)
         interator += 1
 
 def maxArray(evaluate, res):
-    for i in range(10):
-        if evaluate[i]["similarity"] < res["similarity"]:
-            evaluate[i] = res
-            break
+    if len(evaluate) <= 4:
+        evaluate.append(res)
+    else: 
+        for i in range(5):
+            if evaluate[i]["similarity"] < res["similarity"]:
+                evaluate[i] = res
+                break
+    return evaluate
 
 #file_arr = os.listdir('../data/mpd.v1/data/')
 # with open('play.json') as f:
@@ -130,8 +134,8 @@ def maxArray(evaluate, res):
 # pl_u = treatPlay(pls2["playlists"][0])
 # pl_t = treatPlay(pls3["playlists"][0])
 
-training_arr = os.listdir('../training/')
-test_arr = os.listdir('../test_def/')
+training_arr = os.listdir('../data/training/')
+test_arr = os.listdir('../data/test_def/')
 
 makeRank(training_arr, test_arr)
 

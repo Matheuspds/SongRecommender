@@ -54,14 +54,14 @@ def testDefinitive(file_array):
     for f in file_array:
         res["playlists"] = []
         iterator += 1
-        with open("./test/"+f) as playlists:
+        with open("../data/test/"+f) as playlists:
             pl_arr = json.load(playlists)
         for p in pl_arr["playlists"]: 
             max_remove = int(math.floor(float(30 * (len(p["tracks"]))) / 100))
             rang = len(p["tracks"]) - max_remove
             p["tracks"] = random.sample(p["tracks"], rang)
             res["playlists"].append(p)
-        with open("./test_def/"+f, "w") as test:
+        with open("../data/test_def/"+f, "w") as test:
             json.dump(res, test)
         print "generating file " + f + " " + str(iterator)
     return
@@ -78,18 +78,13 @@ def printLen(file1, file2):
                 print str(len(p1["tracks"])) + " " + str(len(p2["tracks"]))
 
 
-file_arr = os.listdir('../data/mpd.v1/data/')
-test_arr = os.listdir('./test')
-test_def_arr = os.listdir('./test_def')
-#testDefinitive(test_arr)
+#file_arr = os.listdir('../data/mpd.v1/data/')
+test_arr = os.listdir('../data/test')
+test_def_arr = os.listdir('../data/test_def')
+testDefinitive(test_arr)
 
-printLen(test_arr, test_def_arr)
+#printLen(test_arr, test_def_arr)
 
-
-with open('play.json') as f:
-    pls2 = json.load(f)
-with open('test.json') as f:
-    pls3 = json.load(f)
 
 #createTraining(file_arr)
 #createTest(file_arr)
