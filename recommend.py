@@ -38,6 +38,29 @@ def findPl(cands):
         else:
             next
 
+    
+def trackirize(pl):
+    new_p = {}
+    new_p["tracks"] = []
+    new_p["num_tracks"] = pl["num_tracks"]
+    new_p["pid"] = pl["pid"]
+    for track in pl["tracks"]:
+        new_p["tracks"].append(track["track_uri"])
+    return new_p
+
+def complete(tracks, pl):
+    print len(tracks) , " ", len(pl["tracks"])
+    new_p = trackirize(pl)
+    for i in tracks:
+        if len(new_p["tracks"]) < pl["num_tracks"]:
+            if i["track_uri"] not in new_p["tracks"]:
+                new_p["tracks"].append(i["track_uri"])
+    if len(new_p["tracks"]) == pl["num_tracks"]: 
+        with open("../complete/"+str(new_p["pid"])+".json", "w") as result:
+            json.dump(new_p, result)
+            
+        
+
 iterator = 0
 for f in test_arr:  
     with open('../test_def/'+f) as pl:
@@ -50,12 +73,10 @@ for f in test_arr:
         if aux:
             for a in aux: 
                 if a["jac"] > 0.2:
-                    print a
-                    findPl(a["cand"])
+                    tracks = findPl(a["cand"])
+                    complete(tracks, p)
                     #crio uma funcao aqui que recebe as tracks e uma playlist
                     #retorna a playlist completa e escreve num arquivo
 
                 
-    
 
-        
