@@ -1,19 +1,9 @@
-import matplotlib.pyplot as plt
-from matplotlib import style
-style.use('ggplot')
-import numpy as np
-from sklearn.cluster import KMeans
-from sklearn import preprocessing, cross_validation
-import pandas as pd
 import json
-from pandas.io.json import json_normalize
-import hashlib
 import math
 import os 
 import random 
 
-
-
+#Creates the training set
 def createTraining(file_arr):  
     iterator = 0
     res = {}
@@ -28,6 +18,7 @@ def createTraining(file_arr):
             json.dump(res, training)
     return 
 
+#Creates the test set
 def createTest(file_arr):
     iterator = 0
     res = {}
@@ -47,6 +38,7 @@ def createTest(file_arr):
         print "generating file " + f + " " + str(iterator) 
     return
 
+#Removes 30% os the musics in a playlist
 def testDefinitive(file_array):
     iterator = 0
     res = {}
@@ -66,8 +58,8 @@ def testDefinitive(file_array):
         print "generating file " + f + " " + str(iterator)
     return
 
-
-def printLen(file1, file2):
+#Compare the size of the test set with the one generated without 30% of the musics
+def sizeChecker(file1, file2):
     for f in file1:
         with open("./test/"+f) as play:
             pl1_arr = json.load(play)
@@ -78,13 +70,6 @@ def printLen(file1, file2):
                 print str(len(p1["tracks"])) + " " + str(len(p2["tracks"]))
 
 
-#file_arr = os.listdir('../data/mpd.v1/data/')
+
 test_arr = os.listdir('../data/test')
 test_def_arr = os.listdir('../data/test_def')
-testDefinitive(test_arr)
-
-#printLen(test_arr, test_def_arr)
-
-
-#createTraining(file_arr)
-#createTest(file_arr)

@@ -1,14 +1,12 @@
-from sklearn.metrics import precision_score
-from math import sqrt
 import json
 import os
 
 result = os.listdir('../result/')
-
 test_arr = os.listdir('../test/')
 train_arr = os.listdir('../training/')
 complete_arr = os.listdir('../complete/')
 
+#Lets only the tracks (removes artist and album) in the playlist
 def trackerize(pl):
     new_p = {}
     new_p["tracks"] = []
@@ -21,6 +19,7 @@ def trackerize(pl):
         new_p["tracks"].append(tr)
     return new_p
 
+#Gets the complete playlist with the original tracks
 def getPlOriginal(pid):
     for f in test_arr:
         s = f.replace('mpd.slice.','')
@@ -35,22 +34,13 @@ def getPlOriginal(pid):
         else:
             next
 
+#Gets the playlist completed by the algorithm
 def getPlRecommended(pid):
     with open('../complete/'+str(pid)+".json") as pl:
         pl_data = json.load(pl)
     return pl_data
 
-pid = 1259
-p_original = trackerize(getPlOriginal(pid))
-p_recommend = getPlRecommended(pid)
-cont = 0
-
-def unify(p):
-    tracks = []
-    for i in p["tracks"]:
-        tracks.append(i["track_uri"])
-    return tracks
-
+#Executes evaluation
 for i in complete_arr:
     i = i.replace('.json', '')
     p_original = trackerize(getPlOriginal(i))
@@ -59,9 +49,8 @@ for i in complete_arr:
     for track in p_original["tracks"]:
         if track not in p_recommend["tracks"]:
             error += 1 
-    #r = precision_score(unify(p_original), unify(p_recommend), average='macro')
     print p_original["pid"] , "adicionei", p_recommend["added"],  "acertei", p_recommend["added"] - error
-    #print r 
+    
 
 
 
