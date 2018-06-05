@@ -32,34 +32,38 @@ def findPl(cands):
             with open('../training/'+f) as pl:
                 pl_data = json.load(pl)
             for p in pl_data["playlists"]:
+                p = trackerize(p)
                 if p["pid"] == cands:
                     tracks = p["tracks"]
                     return tracks
         else:
             next
 
-    
-def trackirize(pl):
+def trackerize(pl):
     new_p = {}
     new_p["tracks"] = []
     new_p["num_tracks"] = pl["num_tracks"]
     new_p["pid"] = pl["pid"]
     for track in pl["tracks"]:
-        new_p["tracks"].append(track["track_uri"])
+        tr = {}
+        tr["track_uri"] = track["track_uri"]
+        tr["track_name"] = track["track_name"]
+        new_p["tracks"].append(tr)
     return new_p
 
 def complete(tracks, pl):
-    print len(tracks) , " ", len(pl["tracks"])
-    new_p = trackirize(pl)
+    #print len(pl["tracks"])
+    new_p = trackerize(pl)
+    added = 0
     for i in tracks:
         if len(new_p["tracks"]) < pl["num_tracks"]:
-            if i["track_uri"] not in new_p["tracks"]:
-                new_p["tracks"].append(i["track_uri"])
+            if i not in new_p["tracks"]:
+                added += 1
+                new_p["tracks"].append(i)
+    new_p["added"] = len(new_p["tracks"])-len(pl["tracks"])
     if len(new_p["tracks"]) == pl["num_tracks"]: 
         with open("../complete/"+str(new_p["pid"])+".json", "w") as result:
             json.dump(new_p, result)
-            
-        
 
 iterator = 0
 for f in test_arr:  
