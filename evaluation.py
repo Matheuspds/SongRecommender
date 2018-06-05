@@ -5,6 +5,7 @@ result = os.listdir('../result/')
 test_arr = os.listdir('../test/')
 train_arr = os.listdir('../training/')
 complete_arr = os.listdir('../complete/')
+complete_cos_arr = os.listdir('../complete_cosine/')
 
 #Lets only the tracks (removes artist and album) in the playlist
 def trackerize(pl):
@@ -40,6 +41,11 @@ def getPlRecommended(pid):
         pl_data = json.load(pl)
     return pl_data
 
+def getPlRecommendedCos(pid):
+    with open('../complete_cosine/'+str(pid)+".json") as pl:
+        pl_data = json.load(pl)
+    return pl_data
+
 #Executes evaluation
 withheld_tracks = 0
 relevant_recommended_tracks = 0
@@ -56,7 +62,24 @@ for i in complete_arr:
     print p_original["pid"] , "adicionei", p_recommend["added"],  "acertei", p_recommend["added"] - error
 r_precision = relevant_recommended_tracks / float(withheld_tracks)
 
-print "R Precision is ", r_precision
+print "R Precision Jaccard is ", r_precision
+
+withheld_tracks = 0
+relevant_recommended_tracks = 0
+for i in complete_cos_arr:
+    i = i.replace('.json', '')
+    p_original = trackerize(getPlOriginal(i))
+    p_recommend = getPlRecommendedCos(i) 
+    error = 0
+    for track in p_original["tracks"]:
+        if track not in p_recommend["tracks"]:
+            error += 1 
+    withheld_tracks += p_recommend["added"]
+    relevant_recommended_tracks += (p_recommend["added"] - error)
+    print p_original["pid"] , "adicionei", p_recommend["added"],  "acertei", p_recommend["added"] - error
+r_precision = relevant_recommended_tracks / float(withheld_tracks)
+
+print "R Precision Cosine is ", r_precision
 
 
 

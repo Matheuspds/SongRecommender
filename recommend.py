@@ -31,6 +31,16 @@ def findBestCands(pid):
             res.append(c)
     return res
 
+def findBestCandsCosine(pid):
+    with open('../result_cosine/'+str(pid)+".json") as p:
+        cands = json.load(p)
+    res = []
+    for c in cands:
+        if (c["cos"] > 0.2):
+            res.append(c)
+    return res
+
+
 #Access the playlist with best similiarity and returns its tracks 
 def findPl(cands):
     for f in train_arr:
@@ -50,7 +60,7 @@ def findPl(cands):
             next
 
 #Fills the incomplete Playlist with the data of the best candidates
-def complete(tracks, pl):
+def complete(tracks, pl, path):
     new_p = trackerize(pl)
     for i in tracks:
         if len(new_p["tracks"]) < pl["num_tracks"]:
@@ -58,7 +68,7 @@ def complete(tracks, pl):
                 new_p["tracks"].append(i)
     new_p["added"] = len(new_p["tracks"])-len(pl["tracks"])
     if len(new_p["tracks"]) == pl["num_tracks"]: 
-        with open("../complete/"+str(new_p["pid"])+".json", "w") as result:
+        with open("../"+path+"/"+str(new_p["pid"])+".json", "w") as result:
             json.dump(new_p, result)
 
 
@@ -73,6 +83,17 @@ for f in test_arr:
             for a in aux: 
                 if a["jac"] > 0.2:
                     tracks = findPl(a["cand"])
-                    complete(tracks, p)
+                    complete(tracks, p, "complete")
                 
-
+for f in test_arr:  
+    with open('../test_def/'+f) as pl:
+        pl_data = json.load(pl)
+    cands = []
+    for p in pl_data["playlists"]:
+        aux = findBestCandsCosine(p["pid"])
+        if aux:
+            for a in aux: 
+                if a["cos"] > 0.2:
+                    tracks = findPl(a["cand"])
+                    complete(tracks, p, "complete_cosine")
+                
