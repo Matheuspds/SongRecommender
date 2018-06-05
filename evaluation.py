@@ -41,6 +41,8 @@ def getPlRecommended(pid):
     return pl_data
 
 #Executes evaluation
+withheld_tracks = 0
+relevant_recommended_tracks = 0
 for i in complete_arr:
     i = i.replace('.json', '')
     p_original = trackerize(getPlOriginal(i))
@@ -49,8 +51,12 @@ for i in complete_arr:
     for track in p_original["tracks"]:
         if track not in p_recommend["tracks"]:
             error += 1 
+    withheld_tracks += p_recommend["added"]
+    relevant_recommended_tracks += (p_recommend["added"] - error)
     print p_original["pid"] , "adicionei", p_recommend["added"],  "acertei", p_recommend["added"] - error
-    
+r_precision = relevant_recommended_tracks / float(withheld_tracks)
+
+print "R Precision is ", r_precision
 
 
 
