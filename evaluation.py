@@ -51,6 +51,8 @@ def unify(p):
         tracks.append(i["track_uri"])
     return tracks
 
+withheld_tracks = 0
+retrieved_tracks = 0
 for i in complete_arr:
     i = i.replace('.json', '')
     p_original = trackerize(getPlOriginal(i))
@@ -59,9 +61,9 @@ for i in complete_arr:
     for track in p_original["tracks"]:
         if track not in p_recommend["tracks"]:
             error += 1 
-    #r = precision_score(unify(p_original), unify(p_recommend), average='macro')
-    print p_original["pid"] , "adicionei", p_recommend["added"],  "acertei", p_recommend["added"] - error
-    #print r 
-
-
-
+    #r = precision_score(unify(p_original), unify(p_recommend), average='macro') 
+    retrieved_tracks += p_recommend["added"] - error
+    withheld_tracks +=  p_recommend["added"]
+    
+r_precision = retrieved_tracks / float(withheld_tracks)
+print "withheld_tracks", withheld_tracks, "retrieved tracks", retrieved_tracks, "r precision", r_precision
