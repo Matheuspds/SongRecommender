@@ -3,6 +3,7 @@ import pandas as pd
 from pandas.io.json import json_normalize
 import json
 import os
+from sklearn.metrics.pairwise import cosine_similarity
 
 def pushArr(arr, obj):
     if len(arr) < 4:
@@ -15,10 +16,25 @@ def pushArr(arr, obj):
                 break
         return evaluate
 
+def cosine(a, b):
+    c = list(set().union(a, b))
+    a_binary = []
+    b_binary = []
+    for el in c:
+        if el in a:
+            a_binary.append(1)
+        else:
+            a_binary.append(0)
+        if el in b:
+            b_binary.append(1)
+        else:
+            b_binary.append(0)
+    cos = cosine_similarity(a_binary, b_binary)
+    return cos
+
 def jaccard(a, b):
     c = a.intersection(b)
     return float(len(c)) / (len(a) + len(b) - len(c))
-
 
 training_arr = os.listdir('../training/')
 iterator_tr = 0
@@ -28,7 +44,6 @@ iterator_tes = 0
 frames = []
 for js in test_arr:
     print iterator_tes
-    
     with open('../test_def/'+js) as f:
         d = json.load(f)
     iterator_tes += 1
@@ -54,7 +69,8 @@ for js in training_arr:
 train = train_data[["track_uri","pid"]]
 train = train.groupby("pid")["track_uri"].apply(list)
 
-for k, p in test.iteritems():
+print "calculating jaccard distance"
+for k, p in test.iteritems(): 
     evaluate = []
     for k2, p2 in train.iteritems():
         obj = {}
@@ -67,3 +83,19 @@ for k, p in test.iteritems():
             evaluate = pushArr(evaluate, obj)
     with open("../result/"+str(k)+".json", "w") as result:
         json.dump(evaluate, result)
+
+print "calculating cosine distance"
+for k, p in test.iteritems(): 
+    evaluate = []
+    for k2, p2 in train.iteritems():
+        obj = {}
+        el1 = set(p)
+        el2 = set(p2)
+        obj["cos"] = cosine(el1, el2)
+        if obj["cos"] > 0.0:
+            obj["pid"] = k
+            obj["cand"] = k2
+            evaluate = pushArr(evaluate, obj)
+    with open("../result_cosine/"+str(k)+".json", "w") as result:
+        json.dump(evaluate, result)
+
