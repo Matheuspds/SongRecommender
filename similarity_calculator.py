@@ -16,6 +16,17 @@ def pushArr(arr, obj):
                 break
         return evaluate
 
+def pushArrCos(arr, obj):
+    if len(arr) < 4:
+        arr.append(obj)
+        return evaluate
+    else:
+        for i in arr:
+            if i["cos"] < obj["cos"]:
+                i = obj
+                break
+        return evaluate
+
 def cosine(a, b):
     c = list(set().union(a, b))
     a_binary = []
@@ -29,8 +40,10 @@ def cosine(a, b):
             b_binary.append(1)
         else:
             b_binary.append(0)
-    cos = cosine_similarity(a_binary, b_binary)
-    return cos
+    dot_product = np.dot(a_binary, b_binary)
+    norm_a = np.linalg.norm(a_binary)
+    norm_b = np.linalg.norm(b_binary)
+    return dot_product / (norm_a * norm_b)
 
 def jaccard(a, b):
     c = a.intersection(b)
@@ -69,20 +82,20 @@ for js in training_arr:
 train = train_data[["track_uri","pid"]]
 train = train.groupby("pid")["track_uri"].apply(list)
 
-print "calculating jaccard distance"
-for k, p in test.iteritems(): 
-    evaluate = []
-    for k2, p2 in train.iteritems():
-        obj = {}
-        el1 = set(p)
-        el2 = set(p2)
-        obj["jac"] = jaccard(el1, el2)
-        if obj["jac"] > 0.0:
-            obj["pid"] = k
-            obj["cand"] = k2
-            evaluate = pushArr(evaluate, obj)
-    with open("../result/"+str(k)+".json", "w") as result:
-        json.dump(evaluate, result)
+# print "calculating jaccard distance"
+# for k, p in test.iteritems(): 
+#     evaluate = []
+#     for k2, p2 in train.iteritems():
+#         obj = {}
+#         el1 = set(p)
+#         el2 = set(p2)
+#         obj["jac"] = jaccard(el1, el2)
+#         if obj["jac"] > 0.0:
+#             obj["pid"] = k
+#             obj["cand"] = k2
+#             evaluate = pushArr(evaluate, obj)
+#     with open("../result/"+str(k)+".json", "w") as result:
+#         json.dump(evaluate, result)
 
 print "calculating cosine distance"
 for k, p in test.iteritems(): 
@@ -95,7 +108,7 @@ for k, p in test.iteritems():
         if obj["cos"] > 0.0:
             obj["pid"] = k
             obj["cand"] = k2
-            evaluate = pushArr(evaluate, obj)
+            evaluate = pushArrCos(evaluate, obj)
     with open("../result_cosine/"+str(k)+".json", "w") as result:
         json.dump(evaluate, result)
 

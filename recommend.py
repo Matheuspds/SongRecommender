@@ -5,6 +5,7 @@ import json
 import os
 
 result = os.listdir('../result/')
+result_cosine = os.listdir('../result_cosine/')
 test_arr = os.listdir('../test_def/')
 train_arr = os.listdir('../training/')
 
